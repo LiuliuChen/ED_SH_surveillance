@@ -5,6 +5,10 @@ Stage 2 (CoT structured extraction).
 Keep all prompt text here so it is easy to audit, version, and update without
 touching inference code.
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import STAGE2
 
 

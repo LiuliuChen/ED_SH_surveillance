@@ -36,6 +36,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import (
     VLLM_API_BASE, VLLM_API_KEY, MODEL_NAME,
     STAGE2, SITES, STEPS, ensure_dirs,
+    ID_COL, NOTE_COL, SH_COL,
 )
 from prompts import build_stage2_prompt
 from utils import safe_parse
@@ -68,7 +69,7 @@ def get_sh_candidate_uids(stage1_jsonl: Path) -> list[str]:
                     continue
                 vote = majority_vote([p['self-harm-related'] for p in parsed])
                 if vote.lower() != 'no':
-                    keep.append(data['uid'])
+                    keep.append(data[ID_COL])
             except Exception:
                 skipped += 1
     if skipped:
@@ -138,9 +139,9 @@ async def query_one_sample(client, sem, messages):
 
 async def process_row(client, sem, row):
     """Run N_RUNS self-consistency calls concurrently for one note."""
-    uid      = row['uid']
-    note     = row['triage_note']
-    sh_label = row['SH']
+    uid      = row[ID_COL]
+    note     = row[NOTE_COL]
+    sh_label = row[SH_COL]
 
     messages = build_stage2_prompt(note)
     tasks = [query_one_sample(client, sem, messages) for _ in range(STAGE2['n_runs'])]
@@ -151,8 +152,8 @@ async def process_row(client, sem, row):
     majority = majority_vote_stepwise(parsed) if parsed else {}
 
     return {
-        'uid':       uid,
-        'SH':        int(sh_label) if sh_label is not None else None,
+        ID_COL: uid,
+        SH_COL: int(sh_label) if sh_label is not None else None,
         'steps':     majority,
         'n_parsed':  len(parsed),
         'responses': responses,
@@ -169,7 +170,7 @@ def load_processed_uids(jsonl_path: Path) -> set:
     with open(jsonl_path) as f:
         for line in f:
             try:
-                processed.add(json.loads(line)['uid'])
+                processed.add(json.loads(line)[ID_COL])
             except Exception:
                 pass
     return processed
@@ -201,13 +202,13 @@ async def run_site(client, sem, site_key: str):
         print('  Nothing to do.')
         return
 
-    df = pd.read_parquet(parquet_path, columns=['uid', 'triage_note', 'SH'])
-    df = df[df['uid'].isin(sh_uids)].reset_index(drop=True)
+    df = pd.read_parquet(parquet_path, columns=[ID_COL, NOTE_COL, SH_COL])
+    df = df[df[ID_COL].isin(sh_uids)].reset_index(drop=True)
 
     done = load_processed_uids(out_path)
     if done:
         before = len(df)
-        df = df[~df['uid'].isin(done)].reset_index(drop=True)
+        df = df[~df[ID_COL].isin(done)].reset_index(drop=True)
         print(f'  resume: {len(done):,} uids already done; '
               f'{before:,} -> {len(df):,} remaining')
 

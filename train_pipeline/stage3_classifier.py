@@ -33,7 +33,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from config import SITES, STAGE3, RANDOM_STATE, train_sites, ensure_dirs
+from config import SITES, STAGE3, RANDOM_STATE, train_sites, ensure_dirs, SH_COL
 from feature_extraction import (
     load_site, fit_vectorisers, build_blocks, stack_features, load_encoder,
 )
@@ -97,7 +97,7 @@ def main():
     vectorisers = fit_vectorisers(train_df)
     blocks      = build_blocks(train_df, encoder, vectorisers)
     X_train     = stack_features(blocks, STAGE3['feature_keys'])
-    y_train     = train_df['SH'].astype(int).values
+    y_train     = train_df[SH_COL].astype(int).values
 
     print('Tuning threshold on 20% holdout...')
     threshold = find_threshold(X_train, y_train)

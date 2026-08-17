@@ -30,12 +30,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import (
     VLLM_API_BASE, VLLM_API_KEY, MODEL_NAME,
     STAGE1, SITES, ensure_dirs,
+    ID_COL, NOTE_COL, SH_COL,
 )
 from prompts import build_stage1_prompt
 from utils import extract_segments, safe_parse
-
-
-NOTE_COL = 'triage_note'
 
 # Relaxed settings for the rerun: higher token budget, reasoning=low if supported.
 RERUN_MAX_OUTPUT_TOKENS = 512
@@ -53,7 +51,7 @@ def identify_failed_uids(jsonl_path: Path) -> list[str]:
                 rec = json.loads(line)
             except Exception:
                 continue
-            uid = rec.get('uid')
+            uid = rec.get(ID_COL)
             if not uid:
                 continue
             if 'error' in rec:
@@ -101,8 +99,8 @@ async def infer_one_row(client, sem, uid, sh, note):
     ]
     samples = await asyncio.gather(*tasks)
     return {
-        'uid':            uid,
-        'SH':             int(sh) if sh is not None else None,
+        ID_COL: uid,
+        SH_COL: int(sh) if sh is not None else None,
         'reasoning_text': [r for r, _ in samples],
         'output_text':    [o for _, o in samples],
     }
@@ -131,22 +129,22 @@ async def rerun_site(client, sem, site_key: str):
     if not failed:
         return
 
-    df = pd.read_parquet(parquet_path)[['uid', 'SH', NOTE_COL]].dropna(subset=[NOTE_COL])
-    df = df[df['uid'].isin(failed)].reset_index(drop=True)
+    df = pd.read_parquet(parquet_path)[[ID_COL, SH_COL, NOTE_COL]].dropna(subset=[NOTE_COL])
+    df = df[df[ID_COL].isin(failed)].reset_index(drop=True)
     print(f'  Matched {len(df):,} rows in parquet to rerun.')
     if len(df) == 0:
         return
 
     new_records = {}
     tasks = [
-        infer_one_row(client, sem, row['uid'], row['SH'], str(row[NOTE_COL]))
+        infer_one_row(client, sem, row[ID_COL], row[SH_COL], str(row[NOTE_COL]))
         for _, row in df.iterrows()
     ]
     done = 0
     for coro in asyncio.as_completed(tasks):
         try:
             rec = await coro
-            new_records[rec['uid']] = rec
+            new_records[rec[ID_COL]] = rec
         except Exception as e:
             print(f'  [worker error] {repr(e)[:200]}')
         done += 1
@@ -166,7 +164,7 @@ async def rerun_site(client, sem, site_key: str):
             except Exception:
                 out_lines.append(line)
                 continue
-            uid = rec.get('uid')
+            uid = rec.get(ID_COL)
             if uid in new_records:
                 out_lines.append(json.dumps(new_records[uid], ensure_ascii=False) + '\n')
                 replaced += 1

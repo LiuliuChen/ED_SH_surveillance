@@ -26,11 +26,20 @@ EVAL_DIR    = OUTPUT_DIR / 'evaluation'
 
 
 """Data columns used for inference"""
+# Column names in your source parquet files. These same names are reused as the
+# record keys in the jsonl files each stage writes, so every stage reads and
+# writes a consistent schema. Change them here and nowhere else.
 DATA_COL = {
-    'ID': 'uid',
-    'note': 'triage_note',
-    'self_harm_label': 'SH'
+    'ID':              'uid',
+    'note':            'triage_note',
+    'self_harm_label': 'SH',
 }
+
+# Derived shorthands imported by the stage scripts. Do not edit these directly;
+# edit DATA_COL above.
+ID_COL   = DATA_COL['ID']
+NOTE_COL = DATA_COL['note']
+SH_COL   = DATA_COL['self_harm_label']
 
 
 """Hospital sites"""

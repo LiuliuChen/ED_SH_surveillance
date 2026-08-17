@@ -42,9 +42,7 @@ from prompts import build_stage1_prompt
 from utils import extract_segments
 
 
-ID_COL = DATA_COL['ID']
-NOTE_COL = DATA_COL['note']
-SH_COL = DATA_COL['SH']
+# ID_COL / NOTE_COL / SH_COL come from config via the wildcard import above.
 
 # =============================================================================
 # Resume mode: read uids already written to the output file

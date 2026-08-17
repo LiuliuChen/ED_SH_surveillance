@@ -1,0 +1,41 @@
+# =============================================================================
+# Clinical data — never commit. This pipeline runs on identifiable-adjacent
+# records; keep every data and model artefact out of version control.
+# =============================================================================
+data/
+outputs/
+*.parquet
+*.csv
+*.tsv
+*.jsonl
+*.jsonl.bak_rerun
+*.joblib
+*.pkl
+*.pt
+*.bin
+credentials/
+.env
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Logs and scheduler output
+*.log
+slurm-*.out
+jobs/

@@ -25,10 +25,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from config import STAGE3, STEPS
-
-
-NOTE_COL = 'triage_note'
+from config import STAGE3, STEPS, ID_COL, NOTE_COL, SH_COL
 
 
 # =============================================================================
@@ -47,7 +44,7 @@ def extract_cot_features(stage2_jsonl: Path) -> pd.DataFrame:
     with open(stage2_jsonl) as f:
         for line in f:
             record = json.loads(line)
-            uid = record['uid']
+            uid = record[ID_COL]
             steps = record.get('steps', {})
 
             def get_label(step):
@@ -85,7 +82,7 @@ def extract_cot_features(stage2_jsonl: Path) -> pd.DataFrame:
                             step_re[step].append(re_text)
 
             row = {
-                'uid':             uid,
+                ID_COL: uid,
                 'kw_cues_bin':     int(get_label('step0') == 'Yes'),
                 'act_on_body_bin': int(get_label('step1') == 'Yes'),
                 'injury_bin':      int(get_label('step2') == 'Yes'),
@@ -123,7 +120,7 @@ def load_stage1_kept_uids(stage1_jsonl: Path) -> set:
                 votes = Counter([p['self-harm-related'] for p in parsed])
                 vote = votes.most_common(1)[0][0]
                 if vote.lower() != 'no':
-                    keep.add(data['uid'])
+                    keep.add(data[ID_COL])
             except Exception:
                 pass
     return keep
@@ -141,21 +138,21 @@ def load_site(parquet_path: Path, stage1_jsonl: Path, stage2_jsonl: Path, name='
     full_df[NOTE_COL] = full_df[NOTE_COL].fillna('')
     full_df = full_df[full_df[NOTE_COL].str.strip() != ''].reset_index(drop=True)
     print(f'  [{name}] {len(full_df):,} notes, '
-          f'{int(full_df["SH"].sum()):,} positive '
-          f'({full_df["SH"].mean():.3%})')
+          f'{int(full_df[SH_COL].sum()):,} positive '
+          f'({full_df[SH_COL].mean():.3%})')
 
     stage1_uids = load_stage1_kept_uids(stage1_jsonl)
     cot_df = extract_cot_features(stage2_jsonl)
 
-    feat_df = full_df[full_df['uid'].isin(stage1_uids)].copy().reset_index(drop=True)
-    feat_df = feat_df.merge(cot_df, on='uid', how='inner')
+    feat_df = full_df[full_df[ID_COL].isin(stage1_uids)].copy().reset_index(drop=True)
+    feat_df = feat_df.merge(cot_df, on=ID_COL, how='inner')
     print(f'  [{name}] Stage 1 + Stage 2 retained: {len(feat_df):,} notes, '
-          f'{int(feat_df["SH"].sum()):,} positive '
-          f'({feat_df["SH"].mean():.3%})')
+          f'{int(feat_df[SH_COL].sum()):,} positive '
+          f'({feat_df[SH_COL].mean():.3%})')
 
-    full_labels = full_df['SH'].astype(int).values
-    uid_to_idx  = {uid: i for i, uid in enumerate(full_df['uid'])}
-    filt_indices = np.array([uid_to_idx[uid] for uid in feat_df['uid']])
+    full_labels = full_df[SH_COL].astype(int).values
+    uid_to_idx  = {uid: i for i, uid in enumerate(full_df[ID_COL])}
+    filt_indices = np.array([uid_to_idx[uid] for uid in feat_df[ID_COL]])
     return feat_df, full_labels, filt_indices
 
 
