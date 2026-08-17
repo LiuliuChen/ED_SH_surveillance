@@ -1,25 +1,26 @@
-# Three-Stage Self-Harm Screening Pipeline
+# Transferable Self-Harm Surveillance from Emergency Department Triage Notes Using an Evidence-Augmented Machine Learning Approach
 
-A clinical NLP pipeline that identifies self-harm presentations in emergency department triage notes. The pipeline combines a large language model (LLM) with a lightweight classifier and is designed to remain robust across hospitals and time periods.
+we propose a three-stage approach combining a large language model(LLM) with a traditional machine learning (ML) classifier to detect self-harm in Emergency Department (ED)
+triage notes.
+
+![flow char](assets/flowchart_NEW_NEW.png)
 
 The pipeline runs in three stages:
 
-1. **Stage 1 — Zero-shot screening.** An LLM (gpt-oss-20b in our experiments) reads each triage note and decides whether it is self-harm-related. Self-consistency voting over three samples gives a high-recall filter that reduces the candidate pool to roughly 5-7% of incoming notes.
-2. **Stage 2 — Chain-of-thought extraction.** For each note retained by Stage 1, the LLM produces a structured 7-step rationale (keyword cues, act on body, injury, method, timing, intentionality, final decision). Five self-consistency samples are pooled by majority vote.
+1. **Stage 1 — Zero-shot screening.** An LLM (gpt-oss-20b in our experiments) reads each triage note and decides whether it is **SELF-HARM-RELATED**.
+2. **Stage 2 — Zero-shot evidence extraction.** For each note retained by Stage 1, the LLM (gpt-oss-20b in our experiments) produces a structured 7-step rationale (keyword cues, act on body, injury, method, timing, intentionality, final decision).
 3. **Stage 3 — Classifier.** A logistic regression model with L2 regularisation combines TF-IDF features over the raw note, MiniLM sentence embeddings, and TF-IDF over the per-step evidence and reasoning text from Stage 2. The decision threshold is tuned on a stratified 20% holdout of the training data.
-
-This repository currently provides the **training pipeline** (`train_pipeline/`). Evaluation scripts will be added in a separate folder.
 
 ---
 
-## Repository layout
+## Repository
 
 ```
 ED_SH_surveillance/
-├── README.md                 (this file)
-├── LICENSE                   MIT
+├── README.md                 
+├── LICENSE                   
 ├── config.py                 single edit point for paths, sites, hyperparameters
-├── requirements.txt          Python dependencies
+├── requirements.txt          
 │
 └── train_pipeline/
     ├── stage1_screening.py       Stage 1 LLM inference
@@ -35,18 +36,11 @@ ED_SH_surveillance/
 
 ## Requirements
 
-- Python 3.10 or later
-- One GPU with at least 24 GB VRAM for vLLM (the 20B model fits on a single A100-40GB or A100-80GB at `--gpu-memory-utilization 0.85`)
-- An OpenAI-compatible LLM server. We use vLLM serving `gpt-oss-20b` (any HuggingFace path works).
-- Triage notes in Apache Parquet format with an identifier column, a free-text note column, and a 0/1 gold label column. These default to `uid`, `triage_note`, and `SH`; point the pipeline at your own column names via `DATA_COL` in `config.py` (see [Configuration](#configuration)).
-
 Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
-
-Key dependencies: `openai`, `pandas`, `pyarrow`, `scikit-learn`, `sentence-transformers`, `scipy`, `joblib`.
 
 ---
 
@@ -115,8 +109,6 @@ python -m vllm.entrypoints.openai.api_server \
   --host 127.0.0.1 --port 8000
 ```
 
-`--max-num-seqs 64` is important. Lower values bottleneck Stages 1 and 2 even when the GPU has spare KV-cache capacity.
-
 If the server is not on `localhost:8000`, set the `VLLM_API_BASE` constant in `config.py` accordingly.
 
 ### 2. Run Stage 1 (LLM screening)
@@ -175,37 +167,34 @@ outputs/
 
 ---
 
-## Resource expectations
+[//]: # (## Resource expectations)
 
-On one A100-80GB serving gpt-oss-20b at `--max-num-seqs 64`:
+[//]: # ()
+[//]: # (On one A100-80GB serving gpt-oss-20b at `--max-num-seqs 64`:)
 
-| Stage | Throughput | Time for 100K notes |
-|---|---|---|
-| Stage 1 (3 self-consistency samples) | ~3-4 notes/s | ~8-9 hours |
-| Stage 2 (5 self-consistency samples, only on Stage-1 keeps) | ~0.5 notes/s | depends on Stage-1 retention (~3-4 hours per 5-10K keeps) |
-| Stage 3 (CPU training) | n/a | minutes |
+[//]: # ()
+[//]: # (| Stage | Throughput | Time for 100K notes |)
 
-Stage 3 does not require a GPU but the MiniLM embedding step within Stage 3 is GPU-accelerated when a GPU is available.
+[//]: # (|---|---|---|)
 
----
+[//]: # (| Stage 1 &#40;3 self-consistency samples&#41; | ~3-4 notes/s | ~8-9 hours |)
 
-## Reproducing the paper
+[//]: # (| Stage 2 &#40;5 self-consistency samples, only on Stage-1 keeps&#41; | ~0.5 notes/s | depends on Stage-1 retention &#40;~3-4 hours per 5-10K keeps&#41; |)
 
-The paper trains the Stage 3 classifier on a single hospital cohort (RMH chunk 3) and evaluates on five test sets including two prospective cohorts collected 2018-2022. The evaluation scripts that produce these tables and figures will be added in a separate `evaluation/` folder.
+[//]: # (| Stage 3 &#40;CPU training&#41; | n/a | minutes |)
 
-To reproduce just the trained pipeline:
+[//]: # ()
+[//]: # (Stage 3 does not require a GPU but the MiniLM embedding step within Stage 3 is GPU-accelerated when a GPU is available.)
 
-1. Place the parquet files in your data directory.
-2. Configure the matching site entries in `config.py` (set `role='train'` for the training cohort).
-3. Run Stages 1, 2, and 3 as above.
+[//]: # ()
+[//]: # (---)
 
-The trained `pipeline.joblib` produced by Stage 3 reproduces the headline classifier.
 
----
+## Data
 
-## Notes on data
+The triage notes used in the paper come from de-identified clinical records and **cannot be redistributed**. The pipeline is designed to work with any parquet file that has the four expected columns. 
 
-The triage notes used in the paper come from de-identified clinical records and cannot be redistributed. The pipeline is designed to work with any parquet file that has the four expected columns. A small synthetic sample for smoke-testing may be added to the repository in a future commit.
+[//]: # (A small synthetic sample for smoke-testing may be added to the repository in a future commit.)
 
 ---
 
@@ -214,11 +203,19 @@ The triage notes used in the paper come from de-identified clinical records and 
 If you use this code, please cite:
 
 ```
-[citation placeholder]
+@misc{chen2026transferableselfharmsurveillanceemergency,
+      title={Transferable Self-Harm Surveillance from Emergency Department Triage Notes Using an Evidence-Augmented Machine Learning Approach}, 
+      author={Liuliu Chen and Gowri Rajaram and Eleanor Bailey and Katrina Witt and Michelle Lamblin and Jo Robinson and Mike Conway and Vlada Rozova},
+      year={2026},
+      eprint={2606.02545},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2606.02545}, 
+}
 ```
 
 ---
 
 ## License
 
-Released under the MIT License. See [LICENSE](LICENSE).
+MIT License.
