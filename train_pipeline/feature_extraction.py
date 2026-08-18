@@ -1,15 +1,11 @@
 """
 Feature extraction for Stage 3.
 
-Reads a parquet (gold labels + triage notes) and the matching Stage 2 jsonl
-(CoT outputs), produces a feature dataframe suitable for the classifier:
-
   - Raw note TF-IDF
   - MiniLM sentence embedding of the note
   - Per-step TF-IDF over evidence (ev) and reasoning (re) text from the CoT output
   - Step-label encodings (intent, timing, method, etc.)
 
-Used by both stage3_classifier.py (training) and the evaluation scripts.
 """
 from __future__ import annotations
 import json

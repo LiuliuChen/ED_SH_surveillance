@@ -130,7 +130,7 @@ A small fraction of notes (roughly under 1%) produce truncated or unparseable JS
 python rerun_failed.py
 ```
 
-The script identifies failed records, reruns them with `MAX_OUTPUT_TOKENS=512` and `reasoning={'effort': 'low'}`, and replaces them in place. Original files are backed up to `<jsonl>.bak_rerun`.
+The script identifies failed records, reruns them and replaces them in place. Original files are backed up to `<jsonl>.bak_rerun`.
 
 ### 4. Run Stage 2 (CoT extraction)
 
@@ -150,7 +150,6 @@ python stage3_classifier.py
 
 Trains on every site whose `role == 'train'`. Concatenates the configured feature blocks (raw-note TF-IDF, MiniLM embeddings, per-step evidence/reasoning TF-IDF), tunes a decision threshold on a stratified 20% holdout, refits on the full training set, and saves a joblib bundle to `config.STAGE3['save_path']`.
 
-The bundle includes the trained classifier, all TF-IDF vectorisers, the selected threshold, and metadata. Evaluation scripts load this single file.
 
 ---
 

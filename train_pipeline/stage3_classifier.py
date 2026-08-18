@@ -1,25 +1,5 @@
 """
 Stage 3: classifier training.
-
-Trains the final classifier (default: LR with L2 regularisation) on Stage 1 +
-Stage 2 outputs for the configured training site(s). Tunes the decision
-threshold on a stratified 20% holdout of training data, then refits on the
-full training set and saves the bundle to disk for evaluation.
-
-Saved bundle (joblib pickle):
-    {
-        'classifier':  fitted sklearn estimator
-        'vectorisers': dict of fitted TfidfVectorizers
-        'threshold':   float (F1-optimal threshold from holdout)
-        'feature_keys':list of feature block keys used
-        'meta':        training site name(s), n samples, etc.
-    }
-
-Usage:
-    cd train_pipeline
-    python stage3_classifier.py
-
-By default trains on every site in config.SITES whose role == 'train'.
 """
 from __future__ import annotations
 import sys

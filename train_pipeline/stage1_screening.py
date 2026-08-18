@@ -1,27 +1,5 @@
 """
 Stage 1: zero-shot LLM screening.
-
-Runs the served-model classifier over every triage note in one or more sites
-defined in config.SITES, producing a jsonl with self-consistency votes per uid.
-
-Usage:
-    cd train_pipeline
-    python stage1_screening.py --sites rmh_train rmh_test
-
-If no --sites argument is given, runs on all sites in config.SITES whose
-stage1_jsonl does not yet exist (or, with --resume, continues partially
-completed jobs).
-
-Outputs:
-    For each site, writes config.SITES[site]['stage1_jsonl'] with one record
-    per note. Each record has:
-        uid             : note identifier
-        SH              : gold label (if available)
-        reasoning_text  : list of N_RUNS internal reasoning blocks (for audit)
-        output_text     : list of N_RUNS visible outputs (JSON strings)
-
-The script supports resume mode: if the output file already contains records
-for some uids, those uids are skipped on a subsequent run.
 """
 from __future__ import annotations
 import argparse

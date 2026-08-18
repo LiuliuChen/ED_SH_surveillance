@@ -1,14 +1,6 @@
 """
 Prompt strings and prompt builders for Stage 1 (zero-shot screening) and
 Stage 2 (CoT structured extraction).
-
-Keep all prompt text here so it is easy to audit, version, and update without
-touching inference code.
-
-The prompt bodies below are byte-for-byte the strings used in the paper runs,
-including their original indentation, curly quotes, and non-breaking hyphens.
-Reformatting them changes tokenisation and therefore model output, so edit
-them only with intent.
 """
 import sys
 from pathlib import Path

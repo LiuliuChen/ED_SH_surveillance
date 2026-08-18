@@ -1,8 +1,3 @@
-"""
-Shared utilities for stage 1 and stage 2 inference scripts.
-
-Mostly response-extraction helpers and JSON parsing recovery.
-"""
 import json
 import re
 

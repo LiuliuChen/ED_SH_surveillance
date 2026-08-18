@@ -1,17 +1,6 @@
 """
 Rerun stage 1 records that failed to produce parseable output.
 
-Reads each Stage 1 jsonl in config.SITES, identifies records that are:
-  - API error stubs (have 'error' field)
-  - empty output_text on all N_RUNS
-  - unparseable JSON on all N_RUNS
-Reruns just those uids with relaxed settings (higher max_output_tokens and
-optional low reasoning effort) and replaces them in place.
-
-Usage:
-    cd train_pipeline
-    python rerun_failed.py --sites rmh_train rmh_test
-
 If no --sites given, runs on all sites.
 """
 from __future__ import annotations

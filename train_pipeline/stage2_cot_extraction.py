@@ -1,24 +1,5 @@
 """
 Stage 2: CoT structured extraction.
-
-For each site in config.SITES, reads the Stage 1 jsonl, identifies notes
-whose Stage 1 majority vote was self-harm-related (or unsure), then runs
-the chain-of-thought extraction prompt on those notes only.
-
-Usage:
-    cd train_pipeline
-    python stage2_cot_extraction.py --sites rmh_train rmh_test
-
-Outputs:
-    For each site, writes config.SITES[site]['stage2_jsonl'] with one record
-    per Stage-1-positive note. Each record has:
-        uid             : note identifier
-        SH              : gold label
-        steps           : majority-vote per CoT step (label + votes)
-        n_parsed        : how many of N_RUNS samples parsed successfully
-        responses       : raw outputs from each self-consistency run
-
-Resume mode: uids already present in the output jsonl are skipped.
 """
 from __future__ import annotations
 import argparse
