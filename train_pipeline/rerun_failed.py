@@ -29,9 +29,8 @@ RERUN_MAX_OUTPUT_TOKENS = 512
 RERUN_REASONING_EFFORT  = 'low'
 
 
-# =============================================================================
+
 # Identify failed uids in a stage 1 jsonl
-# =============================================================================
 def identify_failed_uids(jsonl_path: Path) -> list[str]:
     failed = []
     with open(jsonl_path) as f:
@@ -57,9 +56,8 @@ def identify_failed_uids(jsonl_path: Path) -> list[str]:
     return failed
 
 
-# =============================================================================
-# Async inference with relaxed knobs
-# =============================================================================
+
+
 async def infer_one_sample(client, sem, sys_msg, usr_msg):
     async with sem:
         kwargs = dict(
@@ -95,9 +93,7 @@ async def infer_one_row(client, sem, uid, sh, note):
     }
 
 
-# =============================================================================
-# Per-site rerun
-# =============================================================================
+
 async def rerun_site(client, sem, site_key: str):
     site = SITES[site_key]
     parquet_path = site['parquet']

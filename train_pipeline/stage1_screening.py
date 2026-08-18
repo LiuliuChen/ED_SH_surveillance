@@ -22,9 +22,10 @@ from utils import extract_segments
 
 # ID_COL / NOTE_COL / SH_COL come from config via the wildcard import above.
 
-# =============================================================================
-# Resume mode: read uids already written to the output file
-# =============================================================================
+
+"""
+Resume mode: read uids already written to the output file
+"""
 def load_done_uids(jsonl_path: Path) -> set:
     if not jsonl_path.exists():
         return set()
@@ -44,9 +45,10 @@ def load_done_uids(jsonl_path: Path) -> set:
     return done
 
 
-# =============================================================================
-# Single-call and per-row inference
-# =============================================================================
+
+"""
+Single-call and per-row inference
+"""
 async def infer_one_sample(client, sem, sys_msg, usr_msg):
     """One LLM call, returns (reasoning_text, output_text) as strings."""
     async with sem:
@@ -86,9 +88,9 @@ async def infer_one_row(client, sem, uid, sh, note):
     }
 
 
-# =============================================================================
-# Per-site runner
-# =============================================================================
+"""
+Per-site runner
+"""
 async def run_site(client, sem, site_key: str):
     site = SITES[site_key]
     parquet_path: Path = site['parquet']
@@ -142,9 +144,7 @@ async def run_site(client, sem, site_key: str):
     print(f'  Done with {site_key}')
 
 
-# =============================================================================
-# Main
-# =============================================================================
+
 async def main_async(site_keys: list[str]):
     ensure_dirs()
     client = AsyncOpenAI(base_url=VLLM_API_BASE, api_key=VLLM_API_KEY)

@@ -23,9 +23,10 @@ from prompts import build_stage2_prompt
 from utils import safe_parse
 
 
-# =============================================================================
-# Identify Stage 1 SH candidates from the screening jsonl
-# =============================================================================
+"""
+Identify Stage 1 SH candidates from the screening jsonl
+"""
+
 def majority_vote(votes):
     return Counter(votes).most_common(1)[0][0]
 
@@ -58,9 +59,11 @@ def get_sh_candidate_uids(stage1_jsonl: Path) -> list[str]:
     return keep
 
 
-# =============================================================================
+
+"""
 # Majority vote across self-consistency runs (per-step)
-# =============================================================================
+"""
+
 STEP_KEYS = STEPS + ['final_decision']
 
 
@@ -99,9 +102,9 @@ def majority_vote_stepwise(parsed_responses):
     return out
 
 
-# =============================================================================
-# Async inference
-# =============================================================================
+
+"""Async inference"""
+
 async def query_one_sample(client, sem, messages):
     """One chat-completion call. Returns response text or None on error."""
     async with sem:
@@ -141,9 +144,8 @@ async def process_row(client, sem, row):
     }
 
 
-# =============================================================================
+
 # Resume mode
-# =============================================================================
 def load_processed_uids(jsonl_path: Path) -> set:
     if not jsonl_path.exists():
         return set()
@@ -157,9 +159,8 @@ def load_processed_uids(jsonl_path: Path) -> set:
     return processed
 
 
-# =============================================================================
+
 # Per-site runner
-# =============================================================================
 async def run_site(client, sem, site_key: str):
     site         = SITES[site_key]
     parquet_path = site['parquet']
@@ -217,9 +218,7 @@ async def run_site(client, sem, site_key: str):
         print(f'  {done_count}/{len(records)} done. Finished.')
 
 
-# =============================================================================
-# Main
-# =============================================================================
+
 async def main_async(site_keys):
     ensure_dirs()
     client = AsyncOpenAI(base_url=VLLM_API_BASE, api_key=VLLM_API_KEY)

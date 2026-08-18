@@ -9,9 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import STAGE2
 
 
-# =============================================================================
-# Stage 1: zero-shot screening prompt (binary self-harm decision)
-# =============================================================================
+
+# Stage 1: zero-shot screening prompt
+
 STAGE1_SYSTEM = """
     You are a helpful clinical assistant trained to determine whether a triage note is SELF-HARM-RELATED.
 
@@ -51,9 +51,9 @@ def build_stage1_prompt(note: str) -> tuple[str, str]:
     return STAGE1_SYSTEM, user_prompt
 
 
-# =============================================================================
+
 # Stage 2: CoT structured extraction prompt
-# =============================================================================
+
 STAGE2_SYSTEM = """
 You are a helpful clinical assistant trained to determine whether a triage note presents evidence of self-harm.
 

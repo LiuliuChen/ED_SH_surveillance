@@ -24,9 +24,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import STAGE3, STEPS, ID_COL, NOTE_COL, SH_COL
 
 
-# =============================================================================
-# Stage 1 + Stage 2 -> per-uid feature dictionary
-# =============================================================================
+
+"""
+Stage 1 + Stage 2 -> per-uid feature dictionary
+"""
 def extract_cot_features(stage2_jsonl: Path) -> pd.DataFrame:
     """Parse stage 2 jsonl into a DataFrame, one row per uid.
 
@@ -152,9 +153,11 @@ def load_site(parquet_path: Path, stage1_jsonl: Path, stage2_jsonl: Path, name='
     return feat_df, full_labels, filt_indices
 
 
-# =============================================================================
-# Feature blocks
-# =============================================================================
+
+"""
+Feature blocks
+"""
+
 def fit_vectorisers(feat_df: pd.DataFrame):
     """Fit all TF-IDF vectorisers on a training feat_df."""
     v = {}
